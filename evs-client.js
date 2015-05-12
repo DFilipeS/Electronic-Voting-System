@@ -1,41 +1,47 @@
-var parties = {
-	0: 'Partido 0',
-	1: 'Partido 1',
-	2: 'Partido 2',
-	3: 'Partido 3'
-};
+var parties;
+var nparties;
 
-var nparties = 4;
+$.ajax('voting-info.php', {
+	success: function (data) {
+		nparties = data.nparties;
+		parties = data.parties;
 
-generateSets(10);
+		$('#status').html(JSON.stringify(generateSets(2)));
+	},
+	error: function () {
+		$('#status').html('An error occurred');
+	}
+});
 
 /* Generates n sets to be sent */
 function generateSets(n) {
 	var sets = new Array();
-	
+
 	for (var i = 0; i < n; i++) {
 		var votesSet = new Array();
-		
-		for (var j = 0; j < nparties; j++) {
-			var vote = new Object();
-			vote.id = guid();
-			vote.party = j;
-			vote.name = parties[j];
-			
-			votesSet.push(vote);
+
+		for (var key in parties) {
+			if (parties.hasOwnProperty(key)) {
+				var vote = new Object();
+				vote.id = guid();
+				vote.party = key;
+				vote.name = parties[key];
+
+				votesSet.push(vote);
+			}
 		}
-		
+
 		sets.push(votesSet);
 	}
-	
+
 	return sets;
 }
 
 /* Generates a unique id for each vote */
 function guid() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-  }
-  
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+	function s4() {
+		return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+	}
+
+	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
