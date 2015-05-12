@@ -1,17 +1,41 @@
 var parties;
-var nparties;
+var publicKey;
 
 $.ajax('voting-info.php', {
 	success: function (data) {
-		nparties = data.nparties;
 		parties = data.parties;
 
-		$('#status').html(JSON.stringify(generateSets(2)));
+		//$('#status').html(JSON.stringify(generateSets(2)));
+		$('#status').html('');
 	},
 	error: function () {
 		$('#status').html('An error occurred');
 	}
 });
+
+/*var encrypted = CryptoJS.AES.encrypt("Hello AES!!!", "dani");
+var decrypted = CryptoJS.AES.decrypt(encrypted, "dani");
+
+console.log(encrypted.toString());
+console.log(decrypted.toString(CryptoJS.enc.Latin1));*/
+
+function handleFileSelect(evt) {
+	var files = evt.target.files; // FileList object
+    
+	// files is a FileList of File objects. List some properties.
+	var output = [];
+	var f = files[0];
+	var r = new FileReader();
+	r.onload = function (e) {
+		var contents = e.target.result;
+		publicKey = contents;
+		
+		console.log(contents);
+		$('#status').html('Public key loaded successfully');
+	};
+	
+	r.readAsText(f);
+}
 
 /* Generates n sets to be sent */
 function generateSets(n) {

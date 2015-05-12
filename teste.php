@@ -1,5 +1,5 @@
 <?php
-set_include_path(get_include_path() . PATH_SEPARATOR . 'libs');	
+set_include_path(get_include_path() . PATH_SEPARATOR . 'phpseclib');	
 include('Crypt/RSA.php');
 
 header('Content-Type: application/json');
