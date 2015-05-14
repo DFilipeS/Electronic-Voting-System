@@ -37,8 +37,14 @@
     <div class="container">        
       <div class="form-group">
         <label for="files">Public key</label>
-        <input type="file" id="files" name="files[]" />
-        <p class="help-block">Insert your RSA public key here. It will NOT be uploaded to the server.</p>
+        <input type="file" id="filesPubKey" name="files[]" />
+        <p class="help-block">Insert your RSA public key here. It will be uploaded to the server.</p>
+      </div>
+      
+      <div class="form-group">
+        <label for="files">Private key</label>
+        <input type="file" id="filesPrivKey" name="files[]" />
+        <p class="help-block">Insert your RSA private key here. It will NOT be uploaded to the server.</p>
       </div>
       
       <div id="status">A carregar informação...</div>
@@ -59,7 +65,8 @@
       // Check for the various File API support.
       if (window.File && window.FileReader && window.FileList && window.Blob) {
         // Great success! All the File APIs are supported.
-        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        document.getElementById('filesPubKey').addEventListener('change', handleFileSelect, false);
+        document.getElementById('filesPrivKey').addEventListener('change', handleFileSelect, false);
       } else {
         alert('The File APIs are not fully supported in this browser.');
       }

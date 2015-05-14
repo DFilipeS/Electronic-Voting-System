@@ -44,6 +44,7 @@ function handleFileSelect(evt) {
 	var r = new FileReader();
 	r.onload = function (e) {
 		var contents = e.target.result;
+		
 		publicKey = contents;
 		
 		console.log(contents);

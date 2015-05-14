@@ -29,7 +29,7 @@ $rsa->loadKey($publickey); // public key
 //echo $rsa->verify($plaintext, $signature) ? 'verified' : 'unverified';
 
 $obj = new stdClass();
-$obj->verification = $rsa->verify($plaintext, $signature) ? 'verified' : 'unverified';;
+$obj->verification = $rsa->verify($plaintext, $signature) ? 'verified' : 'unverified';
 $obj->message = $plaintext;
 echo json_encode($obj);
 ?>

@@ -13,7 +13,7 @@
 
 3. Utilizador assina e envia os 10 conjuntos de votos à CE (Comissão Eleitoral) e a sua chave pública.
 
-4. CE decifra os conjuntos com a chave privada do utilizador e pede as passwords de 9 dos 10 conjuntos de votos (aleatoriamente escolhe 1 e abre o resto).
+4. CE decifra os conjuntos com a sua chave privada e pede as passwords de 9 dos 10 conjuntos de votos (aleatoriamente escolhe 1 e abre o resto).
 
 5. CE verifica que todos os conjuntos estão em conformidade com a votação, assina cada voto do 10º conjunto escolhido e envia de novo ao utilizador.
 
