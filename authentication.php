@@ -2,7 +2,7 @@
 set_include_path(get_include_path() . PATH_SEPARATOR . 'phpseclib');	
 include('Crypt/RSA.php');
 
-//header('Content-Type: application/json');
+header('Content-Type: application/json');
 
 // Vem do AJAX
 $id = 1;
@@ -35,7 +35,9 @@ $rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
 $ciphertext = $rsa->encrypt($plaintext);
 
 $res = new stdClass();
-$res->secret = bin2hex($ciphertext);
+$res->secret = base64_encode($ciphertext);
+$res->cleartext = $plaintext;
+$res->privKey = file_get_contents('keys/key.priv');
 
 echo json_encode($res);
 ?>

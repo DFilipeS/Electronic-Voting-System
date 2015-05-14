@@ -1,5 +1,7 @@
 var parties;
 var publicKey;
+var privateKey;
+
 var id = "123";
 
 $.ajax('voting-info.php', {
@@ -15,17 +17,27 @@ $.ajax('voting-info.php', {
 });
 
 var request = $.ajax({
-	  url: "authentication.php",
-	  type: "POST",
-	  data: {id : id},
-	  dataType: "html"
+	url: "authentication.php",
+	type: "POST",
+	data: { id: id },
+	dataType: "html"
 });
 
-request.done(function(msg) {
+request.done(function (msg) {
 	$('#status').html('Request as been sent.');
+	var challenge = JSON.parse(msg);
+
+	// Exemplo
+	var decrypt = new JSEncrypt();
+	decrypt.setPrivateKey(challenge.privKey);
+	
+	var uncrypted = decrypt.decrypt(challenge.secret);
+
+	console.log('cleartext: ' + challenge.cleartext);
+	console.log('decrypted: ' + uncrypted);
 });
 
-request.fail(function(jqXHR, textStatus) {
+request.fail(function (jqXHR, textStatus) {
 	$('#status').html('An error occurred: ' + textStatus);
 });
 
@@ -44,13 +56,17 @@ function handleFileSelect(evt) {
 	var r = new FileReader();
 	r.onload = function (e) {
 		var contents = e.target.result;
-		
-		publicKey = contents;
-		
+
+		if (evt.target.id == 'filesPubKey') {
+			publicKey = contents;
+		} else if (evt.target.id == 'filesPrivKey') {
+			privateKey = contents;
+		}
+
 		console.log(contents);
 		$('#status').html('Public key loaded successfully');
 	};
-	
+
 	r.readAsText(f);
 	testRSA();
 }
@@ -59,18 +75,18 @@ function handleFileSelect(evt) {
 function generateSets(n) {
 	var sets = new Array();
 	var setsPass = new Array();
-	
+
 	for (var i = 0; i < n; i++) {
 		var votesSet = new Array();
 		var votesSetPass = new Array();
-		
+
 		for (var key in parties) {
 			if (parties.hasOwnProperty(key)) {
 				var vote = new Object();
 				vote.id = guid();
 				vote.party = key;
 				vote.name = parties[key];
-				
+
 				var voteE = cryptSetAES(vote);
 				votesSet.push(voteE.encrypted);
 				votesSetPass.push(voteE.passcode);
@@ -89,56 +105,56 @@ function cryptSetAES(vote) {
 	
 	//Chipher with random passcode and add to KeysSet
 	var encrypted = CryptoJS.AES.encrypt(JSON.stringify(vote), passcode);
-	console.log("encrypted: "+encrypted.toString());		
+	console.log("encrypted: " + encrypted.toString());		
 
 	/*Later to decrypt
 	var decrypted = CryptoJS.AES.decrypt(encrypted, passcode);
 	console.log("decrypted: "+JSON.parse(decrypted).toString(CryptoJS.enc.Latin1));*/
-	
+
 	var obj = new Object();
 	obj.encrypted = encrypted;
 	obj.passcode = passcode;
-	
+
 	return obj;
 }
 
 /* Test RSA related functions */
-function testRSA(){
+function testRSA() {
 	var privkey = cryptico.generateRSAKey("password", 1024);
-	var pubkey = cryptico.publicKeyString(privkey);   
+	var pubkey = cryptico.publicKeyString(privkey);
 
 	var testStr = "ola";
-		
+
 	var crypted = cryptRSA(testStr, pubkey);
 	decryptRSA(crypted, privkey);
-	
+
 	var cryptedAndSigned = cryptAndSignRSA(testStr, pubkey, privkey);
 	decryptRSA(cryptedAndSigned, privkey);
 }
 
 /* Chipher an object with a public key */
-function cryptRSA(obj, pubKey){
+function cryptRSA(obj, pubKey) {
 	var EncryptionResult = cryptico.encrypt(JSON.stringify(obj), pubKey);
-	console.log("cryptRSA: "+ EncryptionResult.cipher);
-	
+	console.log("cryptRSA: " + EncryptionResult.cipher);
+
 	return EncryptionResult;
 }
 
 /*Chipher an object with a public key and sign it with a private key*/
-function cryptAndSignRSA(obj, pubKey, signKey){
+function cryptAndSignRSA(obj, pubKey, signKey) {
 	var EncryptionResult = cryptico.encrypt(JSON.stringify(obj), pubKey, signKey);
 	
 	// We can get pubKey  -> EncryptionResult.publickey
-	console.log("cryptAndSignRSA: "+ EncryptionResult.cipher);
-	
+	console.log("cryptAndSignRSA: " + EncryptionResult.cipher);
+
 	return EncryptionResult;
 }
 
 /* Decrypts an object with a private key*/
-function decryptRSA(obj, privKey){
+function decryptRSA(obj, privKey) {
 	var DecryptionResult = cryptico.decrypt(obj.cipher, privKey);
-	console.log("decryptRSA: "+ JSON.parse(DecryptionResult.plaintext)+"\n");
-	
+	console.log("decryptRSA: " + JSON.parse(DecryptionResult.plaintext) + "\n");
+
 	return JSON.parse(DecryptionResult.plaintext);
 }
 
@@ -153,20 +169,20 @@ function guid() {
 
 //Keys Hash Map (uid,passcode)
 var setKeys = {
-	values: new Array(),	
-	get: function(key){
-		for(var i =0; i< this.values.length; i++){
-			if(this.values[i].key == key){
+	values: new Array(),
+	get: function (key) {
+		for (var i = 0; i < this.values.length; i++) {
+			if (this.values[i].key == key) {
 				return this.values[i].value;
 			}
 		}
 		return null;
 	},
-	add: function(key, value){
+	add: function (key, value) {
 		var obj = new Object();
 		obj.key = key;
-		obj.value = value;	
-		
+		obj.value = value;
+
 		this.values.push(obj);
 	}
 }
