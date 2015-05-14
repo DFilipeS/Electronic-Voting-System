@@ -2,7 +2,7 @@ var parties;
 var publicKey;
 var privateKey;
 
-var id = "123";
+var id = 1;
 
 $.ajax('voting-info.php', {
 	success: function (data) {
@@ -19,22 +19,24 @@ $.ajax('voting-info.php', {
 var request = $.ajax({
 	url: "authentication.php",
 	type: "POST",
-	data: { id: id },
+	data: { voter_id: id },
 	dataType: "html"
 });
 
 request.done(function (msg) {
 	$('#status').html('Request as been sent.');
-	var challenge = JSON.parse(msg);
-
-	// Exemplo
-	var decrypt = new JSEncrypt();
-	decrypt.setPrivateKey(challenge.privKey);
 	
-	var uncrypted = decrypt.decrypt(challenge.secret);
-
-	console.log('cleartext: ' + challenge.cleartext);
-	console.log('decrypted: ' + uncrypted);
+	var challenge = JSON.parse(msg);
+	
+	if (!challenge.error) {
+		var decrypt = new JSEncrypt();
+		decrypt.setPrivateKey(challenge.privKey);
+		var uncrypted = decrypt.decrypt(challenge.secret);
+		console.log('cleartext: ' + challenge.cleartext);
+		console.log('decrypted: ' + uncrypted);
+	} else {
+		console.log('ERROR: ' + challenge.error);
+	}
 });
 
 request.fail(function (jqXHR, textStatus) {
