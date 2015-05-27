@@ -1,53 +1,78 @@
 var parties;
 var publicKey;
 var privateKey;
-
-var id = 1;
-
-$.ajax('voting-info.php', {
-	success: function (data) {
-		parties = data.parties;
-
-		//$('#status').html(JSON.stringify(generateSets(2)));
-		$('#status').html('');
-	},
-	error: function () {
-		$('#status').html('An error occurred');
-	}
-});
-
-var request = $.ajax({
-	url: "authentication.php",
-	type: "POST",
-	data: { voter_id: id },
-	dataType: "html"
-});
-
-request.done(function (msg) {
-	$('#status').html('Request as been sent.');
-	
-	var challenge = JSON.parse(msg);
-	
-	if (!challenge.error) {
-		var decrypt = new JSEncrypt();
-		decrypt.setPrivateKey(challenge.privKey);
-		var uncrypted = decrypt.decrypt(challenge.secret);
-		console.log('cleartext: ' + challenge.cleartext);
-		console.log('decrypted: ' + uncrypted);
-	} else {
-		console.log('ERROR: ' + challenge.error);
-	}
-});
-
-request.fail(function (jqXHR, textStatus) {
-	$('#status').html('An error occurred: ' + textStatus);
-});
+var token;
 
 /*var encrypted = CryptoJS.AES.encrypt("Hello AES!!!", "dani");
 var decrypted = CryptoJS.AES.decrypt(encrypted, "dani");
 
 console.log(encrypted.toString());
 console.log(decrypted.toString(CryptoJS.enc.Latin1));*/
+
+function authenticateVoter() {
+	var voterId = $('#voterNumber').val();
+	publicKeyField = $('#filesPubKey').val();
+	privateKeyField = $('#filesPrivKey').val();
+
+	if (voterId != "" && publicKeyField != "" && privateKeyField != "") {
+		var requestChallenge = $.ajax({
+			url: "authentication.php",
+			type: "POST",
+			data: { voter_id: voterId },
+			dataType: "html"
+		});
+
+		requestChallenge.done(function (msg) {
+			$('#status').html('Request as been sent.');
+
+			var challenge = JSON.parse(msg);
+
+			if (!challenge.error) {
+				var decrypt = new JSEncrypt();
+				decrypt.setPrivateKey(privateKey);
+
+				token = decrypt.decrypt(challenge.secret);
+				setToken(voterId, token);
+
+				console.log('INFO: token = ' + token);
+			} else {
+				console.log('ERROR: ' + challenge.error);
+			}
+		});
+
+		requestChallenge.fail(function (jqXHR, textStatus) {
+			$('#status').html('An error occurred: ' + textStatus);
+		});
+	} else {
+		alert("É necessário preencher todos os campos!");
+	}
+}
+
+function setToken(voterId, token) {
+	var request = $.ajax({
+		url: "authentication.php",
+		type: "POST",
+		data: {
+			voter_id: voterId,
+			token: token
+		},
+		dataType: "html"
+	});
+
+	request.done(function (msg) {
+		var response = JSON.parse(msg);
+		if (response.error) {
+			console.log("ERROR: " + response.error);
+			alert(response.error);
+		} else {
+			console.log('INFO: Token set');
+		}
+	});
+
+	request.fail(function (jqXHR, textStatus) {
+		$('#status').html('An error occurred: ' + textStatus);
+	});
+}
 
 function handleFileSelect(evt) {
 	var files = evt.target.files; // FileList object
@@ -61,17 +86,34 @@ function handleFileSelect(evt) {
 
 		if (evt.target.id == 'filesPubKey') {
 			publicKey = contents;
+			console.log('INFO: Public key loaded successfully');
 		} else if (evt.target.id == 'filesPrivKey') {
 			privateKey = contents;
+			console.log('INFO: Private key loaded successfully');
 		}
-
-		console.log(contents);
-		$('#status').html('Public key loaded successfully');
 	};
 
 	r.readAsText(f);
-	testRSA();
+	//testRSA();
 }
+
+/* Loads parties information from server */
+function loadParties() {
+	$.ajax('voting-info.php', {
+		success: function (data) {
+			parties = data.parties;
+	
+			//$('#status').html(JSON.stringify(generateSets(2)));
+			//$('#status').html('Partidos carregados.');
+			console.log('INFO: Parties loaded');
+		},
+		error: function () {
+			//$('#status').html('An error occurred');
+			console.log('ERROR: An error ocurred loading parties');
+		}
+	});
+}
+
 
 /* Generates n sets to be sent */
 function generateSets(n) {
@@ -105,7 +147,7 @@ function generateSets(n) {
 function cryptSetAES(vote) {
 	var passcode = guid();
 	
-	//Chipher with random passcode and add to KeysSet
+	// Chipher with random passcode and add to KeysSet
 	var encrypted = CryptoJS.AES.encrypt(JSON.stringify(vote), passcode);
 	console.log("encrypted: " + encrypted.toString());		
 
@@ -169,7 +211,7 @@ function guid() {
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
-//Keys Hash Map (uid,passcode)
+// Keys Hash Map (uid,passcode)
 var setKeys = {
 	values: new Array(),
 	get: function (key) {

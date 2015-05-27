@@ -5,14 +5,37 @@ include('Crypt/RSA.php');
 header('Content-Type: application/json');
 
 $id = $_POST['voter_id'];
-$publickey = getPublicKeyFromDB($id);
 
-if (!is_null($publickey)) {
-    echo getChallenge($publickey);
+if (isset($_POST['token'])) {
+    echo setToken($id, $_POST['token']);
 } else {
-    echo getError();
+    $publickey = getPublicKeyFromDB($id);
+    if (!is_null($publickey)) {
+        echo getChallenge($publickey);
+    } else {
+        echo getError();
+    }   
 }
 
+function setToken($voterId, $token) {
+    $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+    $opt = array(
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    );
+    $pdo = new PDO($dsn, 'root', 'root', $opt);
+    
+    $query = $pdo->prepare("UPDATE authentication SET token = ? WHERE id = ?");
+    $query->execute(array($token, $voterId));
+    
+    $res = new stdClass();
+    if ($query->rowCount() != 1) {
+        $res->error = "Token not set, something went wrong. Try again!";
+        return json_encode($res);
+    }
+    
+    return json_encode($res);
+}
 
 function getPublicKeyFromDB($voterid) {
     $db = new mysqli('localhost', 'root', 'root', 'evs');
@@ -52,8 +75,6 @@ function getChallenge($key) {
     
     $res = new stdClass();
     $res->secret = base64_encode($ciphertext);
-    $res->cleartext = $plaintext;
-    $res->privKey = file_get_contents('keys/key.priv');
     
     return json_encode($res);
 } 

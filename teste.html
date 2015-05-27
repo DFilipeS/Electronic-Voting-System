@@ -34,20 +34,26 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"></div>
       </div>
     </nav>
-    <div class="container">        
+    <div class="container">
+      <!--<div class="alert alert-success"id="status"></div>-->
+      
       <div class="form-group">
-        <label for="files">Public key</label>
+        <label for="voterNumber">Número de eleitor</label>
+        <input type="text" id="voterNumber" class="form-control" name="elector-number" />
+      </div>
+      <div class="form-group">
+        <label for="files">Chave pública</label>
         <input type="file" id="filesPubKey" name="files[]" />
         <p class="help-block">Insert your RSA public key here. It will NOT be uploaded to the server.</p>
       </div>
-      
       <div class="form-group">
-        <label for="files">Private key</label>
+        <label for="files">Chave privada</label>
         <input type="file" id="filesPrivKey" name="files[]" />
         <p class="help-block">Insert your RSA private key here. It will NOT be uploaded to the server.</p>
       </div>
-      
-      <div id="status">A carregar informação...</div>
+      <div class="form-group">
+        <button class="btn btn-primary" type="button" onclick="authenticateVoter();">Enviar</button>
+      </div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <script src="bootstrap/js/bootstrap.min.js"></script>
