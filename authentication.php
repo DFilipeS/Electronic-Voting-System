@@ -4,38 +4,18 @@ include('Crypt/RSA.php');
 
 header('Content-Type: application/json');
 
+/** Main **/
+
 $id = $_POST['voter_id'];
 
-if (isset($_POST['token'])) {
-    echo setToken($id, $_POST['token']);
+$publickey = getPublicKeyFromDB($id);
+if (!is_null($publickey)) {
+    echo getChallenge($id, $publickey);
 } else {
-    $publickey = getPublicKeyFromDB($id);
-    if (!is_null($publickey)) {
-        echo getChallenge($publickey);
-    } else {
-        echo getError();
-    }   
+    echo getError();
 }
 
-function setToken($voterId, $token) {
-    $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
-    $opt = array(
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    );
-    $pdo = new PDO($dsn, 'root', 'root', $opt);
-    
-    $query = $pdo->prepare("UPDATE authentication SET token = ? WHERE id = ?");
-    $query->execute(array($token, $voterId));
-    
-    $res = new stdClass();
-    if ($query->rowCount() != 1) {
-        $res->error = "Token not set, something went wrong. Try again!";
-        return json_encode($res);
-    }
-    
-    return json_encode($res);
-}
+/** Functions **/
 
 function getPublicKeyFromDB($voterid) {
     $db = new mysqli('localhost', 'root', 'root', 'evs');
@@ -64,11 +44,12 @@ function getPublicKeyFromDB($voterid) {
     }
 }
 
-function getChallenge($key) {
+function getChallenge($voterId, $key) {
     $rsa = new Crypt_RSA();
     $rsa->loadKey($key); // public key
     
     $plaintext = uniqid('', true);
+    setToken($voterId, $plaintext);
     
     $rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
     $ciphertext = $rsa->encrypt($plaintext);
@@ -77,11 +58,31 @@ function getChallenge($key) {
     $res->secret = base64_encode($ciphertext);
     
     return json_encode($res);
-} 
+}
 
 function getError() {
     $res = new stdClass();
     $res->error = "Invalid voter id";
+    
+    return json_encode($res);
+}
+
+function setToken($voterId, $token) {
+    $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+    $opt = array(
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    );
+    $pdo = new PDO($dsn, 'root', 'root', $opt);
+    
+    $query = $pdo->prepare("UPDATE authentication SET token = ? WHERE id = ?");
+    $query->execute(array($token, $voterId));
+    
+    $res = new stdClass();
+    if ($query->rowCount() != 1) {
+        $res->error = "Token not set, something went wrong. Try again!";
+        return json_encode($res);
+    }
     
     return json_encode($res);
 }

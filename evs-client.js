@@ -32,7 +32,6 @@ function authenticateVoter() {
 				decrypt.setPrivateKey(privateKey);
 
 				token = decrypt.decrypt(challenge.secret);
-				setToken(voterId, token);
 
 				console.log('INFO: token = ' + token);
 			} else {
@@ -46,32 +45,6 @@ function authenticateVoter() {
 	} else {
 		alert("É necessário preencher todos os campos!");
 	}
-}
-
-function setToken(voterId, token) {
-	var request = $.ajax({
-		url: "authentication.php",
-		type: "POST",
-		data: {
-			voter_id: voterId,
-			token: token
-		},
-		dataType: "html"
-	});
-
-	request.done(function (msg) {
-		var response = JSON.parse(msg);
-		if (response.error) {
-			console.log("ERROR: " + response.error);
-			alert(response.error);
-		} else {
-			console.log('INFO: Token set');
-		}
-	});
-
-	request.fail(function (jqXHR, textStatus) {
-		$('#status').html('An error occurred: ' + textStatus);
-	});
 }
 
 function handleFileSelect(evt) {
