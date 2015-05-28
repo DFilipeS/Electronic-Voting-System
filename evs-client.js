@@ -1,9 +1,12 @@
 /*************************** Main ****************************/
 
-var parties;
 var publicKey;
 var privateKey;
 var token;
+
+var parties;
+var votes;
+var votesPasswords;
 
 /*var encrypted = CryptoJS.AES.encrypt("Hello AES!!!", "dani");
 var decrypted = CryptoJS.AES.decrypt(encrypted, "dani");
@@ -64,6 +67,8 @@ function authenticateVoter() {
 
 				token = decrypt.decrypt(challenge.secret);
 
+				sendVotes();
+
 				console.log('INFO: token = ' + token);
 			} else {
 				console.log('ERROR: ' + challenge.error);
@@ -85,11 +90,39 @@ function loadParties() {
 			parties = data.parties;
 			console.log('INFO: Parties loaded');
 
-			generateSets(5);
+			generateSets(10);
 		},
 		error: function () {
 			console.log('ERROR: An error ocurred loading parties');
 		}
+	});
+}
+
+function sendVotes() {
+	console.log(votes);
+
+	var request = $.ajax({
+		url: "votes.php",
+		type: "POST",
+		data: {
+			token: token,
+			votes: votes
+		},
+		dataType: "html"
+	});
+
+	request.done(function (msg) {
+		var res = JSON.parse(msg);
+
+		if (!res.error) {
+			console.log ("INFO: Chosen set = " + res.set);
+		} else {
+			console.log(res.error);
+		}
+	});
+
+	request.fail(function (jqXHR, textStatus) {
+		console.log('An error occurred: ' + textStatus);
 	});
 }
 
@@ -109,7 +142,7 @@ function generateSets(n) {
 				vote.party = key;
 				vote.name = parties[key];
 
-				var voteE = cryptSetAES(vote);
+				var voteE = hashVotes(vote);
 				votesSet.push(voteE.encrypted);
 				votesSetPass.push(voteE.passcode);
 			}
@@ -118,17 +151,18 @@ function generateSets(n) {
 		setsPass.push(votesSetPass);
 	}
 
-	console.log(sets);
-
-	return sets;
+	votes = sets;
+	votesPasswords = setsPass;
 }
 
-/* Chipher a vote set */
-function cryptSetAES(vote) {
+/* Hash a set of votes */
+function hashVotes(vote) {
 	var passcode = guid();
 
 	// Chipher with random passcode and add to KeysSet
-	var encrypted = CryptoJS.AES.encrypt(JSON.stringify(vote), passcode);
+	//var encrypted = CryptoJS.AES.encrypt(JSON.stringify(vote), passcode);
+	var hashed = CryptoJS.HmacMD5(JSON.stringify(vote), passcode);
+
 	//console.log("encrypted: " + encrypted.toString());
 
 	/*Later to decrypt
@@ -136,7 +170,7 @@ function cryptSetAES(vote) {
 	console.log("decrypted: "+JSON.parse(decrypted).toString(CryptoJS.enc.Latin1));*/
 
 	var obj = new Object();
-	obj.encrypted = encrypted;
+	obj.encrypted = hashed + "";
 	obj.passcode = passcode;
 
 	return obj;

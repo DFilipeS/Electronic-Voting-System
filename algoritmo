@@ -1,15 +1,16 @@
 1. Utilizador cria 10 conjuntos com 1 voto em cada partido (cada voto possui um identificador aleatório).
 	JavaScript no cliente cria um conjunto (array) de objectos JSON para representar os votos e envia para o servidor. A estrutura de um voto é:
-	
+
 	var voto = {
 		id: 'VALOR ALEATORIO SUFICIENTEMENTE GRANDE',
 		partido: 'VALOR DO PARTIDO EM QUE SE VOTA'
 	}
-	
+
 	var conjunto = [voto0, voto1, voto2, ..., votoN];
-	 
+
 2. Utilizador cifra com criptografia simétrica cada voto de cada conjunto com passwords diferentes.
 	Aplicar AES (ou outra cifra semelhante) a cada voto de cada conjunto com passwords diferentes (mas manter guardadas as passwords no cliente até executar o voto).
+	MODIFICACAO: Em vez de cifrar cada voto, criar uma hash (por exemplo MD5) de cada voto.
 
 3. Utilizador assina e envia os 10 conjuntos de votos à CE (Comissão Eleitoral) e a sua chave pública.
 

@@ -76,8 +76,11 @@ function setToken($voterId, $token) {
     );
     $pdo = new PDO($dsn, 'root', 'root', $opt);
 
-    $query = $pdo->prepare("UPDATE authentication SET token = ? WHERE id = ?");
-    $query->execute(array($token, $voterId));
+    $query = $pdo->prepare("UPDATE authentication SET token = 1 WHERE id = ?");
+    $query->execute(array($voterId));
+
+    $query = $pdo->prepare("INSERT INTO sets (token, data, chosen) VALUES (?, ?, ?)");
+    $query->execute(array($token, NULL, NULL));
 
     $res = new stdClass();
     if ($query->rowCount() != 1) {
