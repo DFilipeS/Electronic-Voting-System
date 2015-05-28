@@ -8,12 +8,6 @@ var parties;
 var votes;
 var votesPasswords;
 
-/*var encrypted = CryptoJS.AES.encrypt("Hello AES!!!", "dani");
-var decrypted = CryptoJS.AES.decrypt(encrypted, "dani");
-
-console.log(encrypted.toString());
-console.log(decrypted.toString(CryptoJS.enc.Latin1));*/
-
 loadParties();
 
 /************************* Functions *************************/
@@ -98,34 +92,6 @@ function loadParties() {
 	});
 }
 
-function sendVotes() {
-	console.log(votes);
-
-	var request = $.ajax({
-		url: "votes.php",
-		type: "POST",
-		data: {
-			token: token,
-			votes: votes
-		},
-		dataType: "html"
-	});
-
-	request.done(function (msg) {
-		var res = JSON.parse(msg);
-
-		if (!res.error) {
-			console.log ("INFO: Chosen set = " + res.set);
-		} else {
-			console.log(res.error);
-		}
-	});
-
-	request.fail(function (jqXHR, textStatus) {
-		console.log('An error occurred: ' + textStatus);
-	});
-}
-
 /* Generates n sets to be sent */
 function generateSets(n) {
 	var sets = new Array();
@@ -153,6 +119,37 @@ function generateSets(n) {
 
 	votes = sets;
 	votesPasswords = setsPass;
+}
+
+/* Send sets of generated votes to server */
+function sendVotes() {
+	console.log(votes);
+
+	var request = $.ajax({
+		url: "votes.php",
+		type: "POST",
+		data: {
+			token: token,
+			votes: votes
+		},
+		dataType: "html"
+	});
+
+	request.done(function (msg) {
+		var res = JSON.parse(msg);
+
+		if (!res.error) {
+			console.log ("INFO: Chosen set = " + res.set);
+
+			// TODO : Send passwords to server
+		} else {
+			console.log(res.error);
+		}
+	});
+
+	request.fail(function (jqXHR, textStatus) {
+		console.log('An error occurred: ' + textStatus);
+	});
 }
 
 /* Hash a set of votes */
