@@ -1,3 +1,5 @@
+/*************************** Main ****************************/
+
 var parties;
 var publicKey;
 var privateKey;
@@ -9,6 +11,35 @@ var decrypted = CryptoJS.AES.decrypt(encrypted, "dani");
 console.log(encrypted.toString());
 console.log(decrypted.toString(CryptoJS.enc.Latin1));*/
 
+loadParties();
+
+/************************* Functions *************************/
+
+/* Handle file select fields of public and private keys */
+function handleFileSelect(evt) {
+	var files = evt.target.files; // FileList object
+
+	// files is a FileList of File objects. List some properties.
+	var output = [];
+	var f = files[0];
+	var r = new FileReader();
+	r.onload = function (e) {
+		var contents = e.target.result;
+
+		if (evt.target.id == 'filesPubKey') {
+			publicKey = contents;
+			console.log('INFO: Public key loaded successfully');
+		} else if (evt.target.id == 'filesPrivKey') {
+			privateKey = contents;
+			console.log('INFO: Private key loaded successfully');
+		}
+	};
+
+	r.readAsText(f);
+	//testRSA();
+}
+
+/* Authenticate voter with the electoral committee */
 function authenticateVoter() {
 	var voterId = $('#voterNumber').val();
 	publicKeyField = $('#filesPubKey').val();
@@ -47,46 +78,20 @@ function authenticateVoter() {
 	}
 }
 
-function handleFileSelect(evt) {
-	var files = evt.target.files; // FileList object
-    
-	// files is a FileList of File objects. List some properties.
-	var output = [];
-	var f = files[0];
-	var r = new FileReader();
-	r.onload = function (e) {
-		var contents = e.target.result;
-
-		if (evt.target.id == 'filesPubKey') {
-			publicKey = contents;
-			console.log('INFO: Public key loaded successfully');
-		} else if (evt.target.id == 'filesPrivKey') {
-			privateKey = contents;
-			console.log('INFO: Private key loaded successfully');
-		}
-	};
-
-	r.readAsText(f);
-	//testRSA();
-}
-
 /* Loads parties information from server */
 function loadParties() {
 	$.ajax('voting-info.php', {
 		success: function (data) {
 			parties = data.parties;
-	
-			//$('#status').html(JSON.stringify(generateSets(2)));
-			//$('#status').html('Partidos carregados.');
 			console.log('INFO: Parties loaded');
+
+			generateSets(5);
 		},
 		error: function () {
-			//$('#status').html('An error occurred');
 			console.log('ERROR: An error ocurred loading parties');
 		}
 	});
 }
-
 
 /* Generates n sets to be sent */
 function generateSets(n) {
@@ -113,16 +118,18 @@ function generateSets(n) {
 		setsPass.push(votesSetPass);
 	}
 
+	console.log(sets);
+
 	return sets;
 }
 
 /* Chipher a vote set */
 function cryptSetAES(vote) {
 	var passcode = guid();
-	
+
 	// Chipher with random passcode and add to KeysSet
 	var encrypted = CryptoJS.AES.encrypt(JSON.stringify(vote), passcode);
-	console.log("encrypted: " + encrypted.toString());		
+	//console.log("encrypted: " + encrypted.toString());
 
 	/*Later to decrypt
 	var decrypted = CryptoJS.AES.decrypt(encrypted, passcode);
@@ -135,44 +142,18 @@ function cryptSetAES(vote) {
 	return obj;
 }
 
-/* Test RSA related functions */
-function testRSA() {
-	var privkey = cryptico.generateRSAKey("password", 1024);
-	var pubkey = cryptico.publicKeyString(privkey);
-
-	var testStr = "ola";
-
-	var crypted = cryptRSA(testStr, pubkey);
-	decryptRSA(crypted, privkey);
-
-	var cryptedAndSigned = cryptAndSignRSA(testStr, pubkey, privkey);
-	decryptRSA(cryptedAndSigned, privkey);
+/* Cipher a message with a public key */
+function encryptRSA(key, message) {
+	var encrypt = new JSEncrypt();
+	encrypt.setPublicKey(key);
+	return encrypt.encrypt(message);
 }
 
-/* Chipher an object with a public key */
-function cryptRSA(obj, pubKey) {
-	var EncryptionResult = cryptico.encrypt(JSON.stringify(obj), pubKey);
-	console.log("cryptRSA: " + EncryptionResult.cipher);
-
-	return EncryptionResult;
-}
-
-/*Chipher an object with a public key and sign it with a private key*/
-function cryptAndSignRSA(obj, pubKey, signKey) {
-	var EncryptionResult = cryptico.encrypt(JSON.stringify(obj), pubKey, signKey);
-	
-	// We can get pubKey  -> EncryptionResult.publickey
-	console.log("cryptAndSignRSA: " + EncryptionResult.cipher);
-
-	return EncryptionResult;
-}
-
-/* Decrypts an object with a private key*/
-function decryptRSA(obj, privKey) {
-	var DecryptionResult = cryptico.decrypt(obj.cipher, privKey);
-	console.log("decryptRSA: " + JSON.parse(DecryptionResult.plaintext) + "\n");
-
-	return JSON.parse(DecryptionResult.plaintext);
+/* Decipher a message with a private key */
+function decryptRSA(key, encrypted) {
+	var decrypt = new JSEncrypt();
+	decrypt.setPrivateKey(key);
+	return decrypt.decrypt(encrypted);
 }
 
 /* Generates a unique id for each vote */
@@ -182,24 +163,4 @@ function guid() {
 	}
 
 	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
-
-// Keys Hash Map (uid,passcode)
-var setKeys = {
-	values: new Array(),
-	get: function (key) {
-		for (var i = 0; i < this.values.length; i++) {
-			if (this.values[i].key == key) {
-				return this.values[i].value;
-			}
-		}
-		return null;
-	},
-	add: function (key, value) {
-		var obj = new Object();
-		obj.key = key;
-		obj.value = value;
-
-		this.values.push(obj);
-	}
 }
