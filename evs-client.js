@@ -6,9 +6,11 @@ var token;
 var chosenSet;
 
 var parties;
+var votes;
 var votesClear;
 var votesHashed;
 var votesPasswords;
+var chosenSetSignatures;
 
 loadParties();
 
@@ -227,17 +229,66 @@ function sendVerificationVotes(excludedVote) {
 	});
 
 	request.done(function (msg) {
-		/*var res = JSON.parse(msg);
+		var res = JSON.parse(msg);
 
 		if (res.ok) {
 			console.log(res.ok);
+			chosenSetSignatures = res.signatures;
+
+			// TODO : Show form to choose the vote.
+			var text = '<h1 style="text-align: center;">Pick a vote</h1>';
+			text = text + '<div class="btn-group-vertical container" style="padding-left: 0px; padding-right: 30px;">';
+			for (var i = 0; i < votes[chosenSet].length; i++) {
+				text = text + '<button type="button" class="btn btn-primary" onclick="vote(this.value)" value="' + i + '">' + votes[chosenSet][i].name + '</button>';
+			}
+
+			text = text + '</div>';
+			$('#content').html(text);
 		} else {
 			console.log(res.error);
-		}*/
+		}
+	});
 
+	request.fail(function (jqXHR, textStatus) {
+		console.log('An error occurred: ' + textStatus);
+	});
+}
+
+function vote(id) {
+	//$('#content').html('');
+
+	var finalVote = {};
+
+	finalVote.token = token;
+	finalVote.id = id;
+	finalVote.signature = chosenSetSignatures[id];
+	finalVote.vote = votes[chosenSet][id];
+
+	var finalVoteText = JSON.stringify(finalVote);
+
+	var finalVoteParts = new Array();
+	while (finalVoteText.length > 100) {
+		finalVoteParts.push(finalVoteText.substring(0,99));
+		finalVoteText = finalVoteText.substring(99, finalVoteText.length);
+	}
+	finalVoteParts.push(finalVoteText);
+
+	for (var i = 0; i < finalVoteParts.length; i++) {
+		var res = encryptRSA(publicKey, JSON.stringify(finalVoteParts[i]));
+		finalVoteParts[i] = res;
+	}
+
+	var request = $.ajax({
+		url: "votes.php",
+		type: "POST",
+		data: {
+			vote: finalVoteParts
+		},
+		dataType: "html"
+	});
+
+	request.done(function (msg) {
 		console.log(msg);
-
-		// TODO : Process return
 	});
 
 	request.fail(function (jqXHR, textStatus) {

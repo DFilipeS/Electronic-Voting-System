@@ -75,6 +75,42 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
         $res->error = "ERROR: Something went wrong, refresh and try again.";
         echo json_encode($res);
     }
+} else if (isset($_POST['vote'])) {
+    $vote = $_POST['vote'];
+    $rsa = new Crypt_RSA();
+    $rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
+    $rsa->loadKey(file_get_contents('keys/key.priv'));
+
+    foreach ($vote as &$part) {
+        $part = $rsa->decrypt(base64_decode($part));
+        $part = rtrim($part, "\0");
+    }
+
+    $vote = implode("", $vote);
+    $vote = str_replace('""', "", $vote);
+    $vote = str_replace('\\', "", $vote);
+    $vote = substr($vote, 1, -1);
+    $vote = json_decode($vote);
+
+    print_r($vote);
+
+    $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+    $opt = array(
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    );
+    $pdo = new PDO($dsn, 'root', 'root', $opt);
+
+    $query = $pdo->prepare("INSERT INTO votes (token, vote_id, party_hash) VALUES (?, ?, ?)");
+    $query->execute(array($vote->token, $vote->vote->id, $vote->vote->party));
+
+    $res = new stdClass();
+    if ($query->rowCount() != 1) {
+        $res->error = "Something went wrong. Try again!";
+        return json_encode($res);
+    }
+
+    echo json_encode($res);
 }
 
 function checkSetsSize($sets) {

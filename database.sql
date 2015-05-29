@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.4.1.1
+-- version 4.4.2
 -- http://www.phpmyadmin.net
 --
--- Host: localhost:8889
--- Generation Time: May 28, 2015 at 10:13 PM
--- Server version: 5.5.42
--- PHP Version: 5.6.7
+-- Host: 127.0.0.1:3306
+-- Generation Time: May 29, 2015 at 09:35 PM
+-- Server version: 5.5.43
+-- PHP Version: 5.4.40
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -31,7 +31,30 @@ CREATE TABLE `authentication` (
 --
 
 INSERT INTO `authentication` (`id`, `public_key`, `token`) VALUES
-(1, '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz6+Nw118k4NeVkEdwPho\nuj0P0I/rBEvMvsuQFsRdUjhiFaKnT2Z98p2cOLtkujBBt6v3HDwffeiOMJHokmMT\nrZ9PQuMGuYdUn6L/P8jYmR4kJkz+lz7N8HS/Id4CMxKCprjWkSSwKB1asls1X3lv\nQNDKHHKudacDwLtUaUNq54gOGnQCoIcecURvOnXJBjNlebxeJDPpdhhUY0B9WpT0\naafG+rpaAkA0UGD/FhmOAQ22oJy2JceZfoQ2hnEAki0FUdg9F6fEh3IUCbecXU/G\n39MlXywOQTaVO1jnU9GBs34IDeT50iVyOQOydmAine7zflvYupxQocmqjFO4HEbM\nKwIDAQAB\n-----END PUBLIC KEY-----', 1);
+(1, '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz6+Nw118k4NeVkEdwPho\nuj0P0I/rBEvMvsuQFsRdUjhiFaKnT2Z98p2cOLtkujBBt6v3HDwffeiOMJHokmMT\nrZ9PQuMGuYdUn6L/P8jYmR4kJkz+lz7N8HS/Id4CMxKCprjWkSSwKB1asls1X3lv\nQNDKHHKudacDwLtUaUNq54gOGnQCoIcecURvOnXJBjNlebxeJDPpdhhUY0B9WpT0\naafG+rpaAkA0UGD/FhmOAQ22oJy2JceZfoQ2hnEAki0FUdg9F6fEh3IUCbecXU/G\n39MlXywOQTaVO1jnU9GBs34IDeT50iVyOQOydmAine7zflvYupxQocmqjFO4HEbM\nKwIDAQAB\n-----END PUBLIC KEY-----', 0);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `parties`
+--
+
+CREATE TABLE `parties` (
+  `id` int(11) NOT NULL,
+  `hash_id` text NOT NULL,
+  `name` text NOT NULL,
+  `hashed_name` text NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `parties`
+--
+
+INSERT INTO `parties` (`id`, `hash_id`, `name`, `hashed_name`) VALUES
+(4, '91a69e5fac4da1093a38ef00622562f0', 'Partido 0', 'partido0_ID'),
+(5, '526a9b5c6f52952a30da6554c7fb628f', 'Partido 1', 'partido1_ID'),
+(6, '07156a48113d6031b605ee56a96accdf', 'Partido 2', 'partido2_ID'),
+(7, 'f79cac13581077ed5364737486c5cbb1', 'Partido 3', 'partido3_ID');
 
 -- --------------------------------------------------------
 
@@ -44,14 +67,20 @@ CREATE TABLE `sets` (
   `token` text NOT NULL,
   `data` text,
   `chosen` int(11) DEFAULT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
 
 --
--- Dumping data for table `sets`
+-- Table structure for table `votes`
 --
 
-INSERT INTO `sets` (`id`, `token`, `data`, `chosen`) VALUES
-(20, '556736bb6d2dc3.73380314', 'YToxMDp7aTowO2E6NDp7aTowO3M6MzI6ImIwOGU3Yzk3MmY5MDczNjI2NTE4MTFjNWExMDRlMjQwIjtpOjE7czozMjoiNTE2MWRiYmU5YmYzYjM1YmIxYTJmODQzYTQzNGIyYWIiO2k6MjtzOjMyOiI4MzcyOTNkZTU4M2MxMDdkMDAxNjA2MzEyYjI0MzI2NyI7aTozO3M6MzI6Ijc1ODM5ZjFiNjU5NjM2NWI5YWM5ZTZiMzdlMGEzMWE2Ijt9aToxO2E6NDp7aTowO3M6MzI6IjQzYTFlYzExZDg1ZmZlNTlmNjk2YmQ0Yzc0MmI5ZjdmIjtpOjE7czozMjoiZTc3ODE1MGQ1MzQ0YzY2NWJlYzAzNDVhMDgwOWQwODMiO2k6MjtzOjMyOiI2ODdhZDY4MGU3YzkzMjlkMTBjNWQ4ZjY4NjE2Y2E1MiI7aTozO3M6MzI6IjcwMDM2ZTQ1ZDQ2MzcxZWE1MjczMzc3ZTVkODFkODFmIjt9aToyO2E6NDp7aTowO3M6MzI6IjliNzhlM2M0ZGQyNzJiYjUxZTZkNzgxMmM2MGU0MWY3IjtpOjE7czozMjoiYzY2MmEzNjdiNjQzZDhlNzIzMmUwMjdiNWZmNzRlZmYiO2k6MjtzOjMyOiI5NGI0YmUxM2U3MTIyNjg3ZDA2OTBkZmJhNTVmMmE2NSI7aTozO3M6MzI6IjMwNDZmMjgxODA0MDAxYjJhNmI5ZjM4MGY0N2MxNTAyIjt9aTozO2E6NDp7aTowO3M6MzI6ImY2Y2M2ZTMxZTc2ZDE5MzQyOTI3NTllNTY4OTc3OTljIjtpOjE7czozMjoiZDBkYzVhNGY0YjVjMjU0ZGE2ZTNhNjI0MWIyODRjNTIiO2k6MjtzOjMyOiJjMmIyNWNiMTIxYTgxZmQwMTFhYjk3Mzc3MjQ5ZDgyZCI7aTozO3M6MzI6Ijc2MWUyZDJiZGRkZjk0YTRmMTVhNzZmYzYyM2Y2YmE2Ijt9aTo0O2E6NDp7aTowO3M6MzI6IjYzOTM1MzI5MDNlMTU1OWJmNjhmMTRlZWI0ZWFiMTBlIjtpOjE7czozMjoiZWQ1NjZjZDFlOTY3MjE1ODI0MWJlM2NhYmIyZmYyYTciO2k6MjtzOjMyOiJiZTAwM2ZiMDVhY2M1MjRjZWRiZTY0N2U3ZDAzYmE1NiI7aTozO3M6MzI6IjRhN2Y3MGQ5NzUxZjYxMTAyZDIwYjRjNzFlNzFmYjNmIjt9aTo1O2E6NDp7aTowO3M6MzI6IjcwYmNiY2Q2YThhMGZkMzZlNDJjNDJjYmY0Y2ZkNjRkIjtpOjE7czozMjoiMTdlM2Y4MWM1ZWFlODM0MGQ2N2I0NTExZDk5NWUwNWMiO2k6MjtzOjMyOiI0ZGIxNjAyZjhkMzRiMmM3NGU3MTQzNTUzZDZkM2E5MyI7aTozO3M6MzI6IjI3ZjA2ZGNmMWIyZTg2MzdkMzk3MTVmZTc4MzRlNGJhIjt9aTo2O2E6NDp7aTowO3M6MzI6IjM3YzQxNDVlMDUxNWYzNzhjZWEwOWM5ZjE5ZWJlZDhiIjtpOjE7czozMjoiMDAyMzU5N2E2M2EyMzBhNTYxNmJmZjE3M2ZhYWExN2QiO2k6MjtzOjMyOiJhZjA3NjJiMDNlNTBkZWI0YThlYWQxN2U4ZDRjNmZmYyI7aTozO3M6MzI6ImQ4OWY1NGZhNTUxZTkzMzI3MWI4MDcyMmNiNzQwNTljIjt9aTo3O2E6NDp7aTowO3M6MzI6IjA4NWQ3Y2UxZTZmNzFlYjQ1NTExY2IxY2ZlM2FhYjYwIjtpOjE7czozMjoiYWNhMjRjYTk4ZTRmZjZmNjg1ODgyMTk1YmFkNmZiYjIiO2k6MjtzOjMyOiIyMjcwNzI0NjQ4YjVlYjg4MWZiYzZlMDRiNGUxNmQxMCI7aTozO3M6MzI6ImExNjZhNWJlODVlYWJlOGZkNDFiNmFmYzJmNjM1OWZmIjt9aTo4O2E6NDp7aTowO3M6MzI6IjEyYmY4ZDA1MzdkODNhZTgxY2NjMjU4YTA2Y2Q4NjI3IjtpOjE7czozMjoiOTRkNmI4MmVhYzQ2ZDk2ZDJiNDA3YWYxNGE2NzdkNDUiO2k6MjtzOjMyOiJiOGZjMGYxZDMxYTgzYWY0NDAyZGQzZTZhOTE3ZDdlYyI7aTozO3M6MzI6ImJmOGE5ODgxZmZkMTA1Mjg4ZmJjOGNmMmVlMTMyZmQ2Ijt9aTo5O2E6NDp7aTowO3M6MzI6ImFkY2UzNzE1ODY5YjRiZDYyMjgxYjM2YTBmOWY5NDlkIjtpOjE7czozMjoiNjMyOTc1NjRhZWUxN2NlNTM3NWFiODQ3MzMxMDQ1OGIiO2k6MjtzOjMyOiIyNzlkYTc1ZWFhOGExMzhjYzkyMWYwYzE0Mzc5NDIxOCI7aTozO3M6MzI6ImY4NjcyZDk3ZjQyYTBiMzI2NTYzNTVjMjQwNTNlMTcxIjt9fQ==', 4);
+CREATE TABLE `votes` (
+  `id` int(11) NOT NULL,
+  `token` text NOT NULL,
+  `vote_id` text NOT NULL,
+  `party_hash` text NOT NULL
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
 --
 -- Indexes for dumped tables
@@ -65,9 +94,21 @@ ALTER TABLE `authentication`
   ADD UNIQUE KEY `id` (`id`);
 
 --
+-- Indexes for table `parties`
+--
+ALTER TABLE `parties`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `sets`
 --
 ALTER TABLE `sets`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `votes`
+--
+ALTER TABLE `votes`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -80,7 +121,17 @@ ALTER TABLE `sets`
 ALTER TABLE `authentication`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
 --
+-- AUTO_INCREMENT for table `parties`
+--
+ALTER TABLE `parties`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=8;
+--
 -- AUTO_INCREMENT for table `sets`
 --
 ALTER TABLE `sets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=132;
+--
+-- AUTO_INCREMENT for table `votes`
+--
+ALTER TABLE `votes`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
