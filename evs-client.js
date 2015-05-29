@@ -5,7 +5,8 @@ var privateKey;
 var token;
 
 var parties;
-var votes;
+var votesClear;
+var votesHashed;
 var votesPasswords;
 
 loadParties();
@@ -94,11 +95,13 @@ function loadParties() {
 
 /* Generates n sets to be sent */
 function generateSets(n) {
-	var sets = new Array();
+	var setsClear = new Array();
+	var setsHashed = new Array();
 	var setsPass = new Array();
 
 	for (var i = 0; i < n; i++) {
-		var votesSet = new Array();
+		var votesClearSet = new Array();
+		var votesHashedSet = new Array();
 		var votesSetPass = new Array();
 
 		for (var key in parties) {
@@ -109,28 +112,33 @@ function generateSets(n) {
 				vote.name = parties[key];
 
 				var voteE = hashVotes(vote);
-				votesSet.push(voteE.encrypted);
+
+				votesClearSet.push(vote);
+				votesHashedSet.push(voteE.encrypted);
 				votesSetPass.push(voteE.passcode);
 			}
 		}
-		sets.push(votesSet);
+
+		setsClear.push(votesClearSet);
+		setsHashed.push(votesHashedSet);
 		setsPass.push(votesSetPass);
 	}
 
-	votes = sets;
+	votes = setsClear;
+	votesHashed = setsHashed;
 	votesPasswords = setsPass;
 }
 
 /* Send sets of generated votes to server */
 function sendVotes() {
-	console.log(votes);
+	console.log(votesHashed);
 
 	var request = $.ajax({
 		url: "votes.php",
 		type: "POST",
 		data: {
 			token: token,
-			votes: votes
+			votes: votesHashed
 		},
 		dataType: "html"
 	});
@@ -141,7 +149,7 @@ function sendVotes() {
 		if (!res.error) {
 			console.log ("INFO: Chosen set = " + res.set);
 
-			// TODO : Send passwords to server
+			sendVerificationVotes(res.set);
 		} else {
 			console.log(res.error);
 		}
@@ -152,19 +160,52 @@ function sendVotes() {
 	});
 }
 
-/* Hash a set of votes */
+/* Sends n-1 sets of votes to server for verification */
+function sendVerificationVotes(excludedVote) {
+	var safeVoteSets = new Array();
+	var safePassSets = new Array();
+
+	for (var i = 0; i < votes.length; i++) {
+		var safeVotes = new Array();
+		var safePass = new Array();
+
+		if (i != excludedVote) {
+			for (var j = 0; j < votes[i].length; j++) {
+				safeVotes.push(votes[i][j]);
+				safePass.push(votesPasswords[i][j]);
+			}
+		}
+
+		safeVoteSets.push(safeVotes);
+		safePassSets.push(safePass);
+	}
+
+	var request = $.ajax({
+		url: "votes.php",
+		type: "POST",
+		data: {
+			token: token,
+			votesSets: safeVoteSets,
+			passSets: safePassSets
+		},
+		dataType: "html"
+	});
+
+	request.done(function (msg) {
+		console.log(msg);
+
+		// TODO : Process return
+	});
+
+	request.fail(function (jqXHR, textStatus) {
+		console.log('An error occurred: ' + textStatus);
+	});
+}
+
+/* Hash a vote */
 function hashVotes(vote) {
 	var passcode = guid();
-
-	// Chipher with random passcode and add to KeysSet
-	//var encrypted = CryptoJS.AES.encrypt(JSON.stringify(vote), passcode);
 	var hashed = CryptoJS.HmacMD5(JSON.stringify(vote), passcode);
-
-	//console.log("encrypted: " + encrypted.toString());
-
-	/*Later to decrypt
-	var decrypted = CryptoJS.AES.decrypt(encrypted, passcode);
-	console.log("decrypted: "+JSON.parse(decrypted).toString(CryptoJS.enc.Latin1));*/
 
 	var obj = new Object();
 	obj.encrypted = hashed + "";
