@@ -92,8 +92,6 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
     $vote = substr($vote, 1, -1);
     $vote = json_decode($vote);
 
-    print_r($vote);
-
     $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
     $opt = array(
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,

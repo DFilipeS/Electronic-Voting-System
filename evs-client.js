@@ -132,6 +132,11 @@ function authenticateVoter() {
 	publicKeyField = $('#filesPubKey').val();
 	privateKeyField = $('#filesPrivKey').val();
 
+	var text = '<h1 style="text-align: center;">Processing...</h1>';
+	text = text + '<p style="text-align: center;">Wait a moment please.</p>';
+
+	$('#content').html(text);
+
 	if (voterId != "" && publicKeyField != "" && privateKeyField != "") {
 		var requestChallenge = $.ajax({
 			url: "authentication.php",
@@ -255,7 +260,10 @@ function sendVerificationVotes(excludedVote) {
 }
 
 function vote(id) {
-	//$('#content').html('');
+	var text = '<h1 style="text-align: center;">Processing...</h1>';
+	text = text + '<p style="text-align: center;">Wait a moment please.</p>';
+
+	$('#content').html(text);
 
 	var finalVote = {};
 
@@ -288,7 +296,18 @@ function vote(id) {
 	});
 
 	request.done(function (msg) {
-		console.log(msg);
+		var res = JSON.parse(msg);
+
+		if (res.error) {
+			console.log(res.error);
+		} else {
+			console.log('INFO: Voting complete.');
+
+			var text = '<h1 style="text-align: center;">Voting complete!</h1>';
+			text = text + '<p style="text-align: center;">Your vote id is <strong>' + votes[chosenSet][id].id + '</strong>. You can save this to check your vote later.</p>';
+
+			$('#content').html(text);
+		}
 	});
 
 	request.fail(function (jqXHR, textStatus) {
