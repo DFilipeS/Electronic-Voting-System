@@ -1,4 +1,6 @@
 <?php
+set_include_path(get_include_path() . PATH_SEPARATOR . 'phpseclib');
+include('Crypt/RSA.php');
 
 if (isset($_POST['token']) && isset($_POST['votes'])) {
     $token = $_POST['token'];
@@ -47,7 +49,21 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
         foreach ($result as $row) {
             $hashedVotesSets = unserialize(base64_decode($row['data']));
             if (verifySetsIntegrity($votesSets, $hashedVotesSets, $passSets)) {
-                echo 'OK';
+                $signatures = array();
+
+                $rsa = new Crypt_RSA();
+                $rsa->loadKey(file_get_contents('keys/key.priv'));
+                $rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
+
+                foreach ($hashedVotesSets[$row['chosen']] as $voteHash) {
+                    $signatures[] = base64_encode($rsa->sign($voteHash));
+                }
+
+                $res = new stdClass();
+                $res->ok = "INFO: Votes integrity is ok.";
+                $res->signatures = $signatures;
+
+                echo json_encode($res);
             } else {
                 $res = new stdClass();
                 $res->error = "ERROR: Something went wrong, refresh and try again.";

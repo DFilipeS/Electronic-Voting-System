@@ -3,6 +3,7 @@
 var publicKey;
 var privateKey;
 var token;
+var chosenSet;
 
 var parties;
 var votesClear;
@@ -35,47 +36,6 @@ function handleFileSelect(evt) {
 
 	r.readAsText(f);
 	//testRSA();
-}
-
-/* Authenticate voter with the electoral committee */
-function authenticateVoter() {
-	var voterId = $('#voterNumber').val();
-	publicKeyField = $('#filesPubKey').val();
-	privateKeyField = $('#filesPrivKey').val();
-
-	if (voterId != "" && publicKeyField != "" && privateKeyField != "") {
-		var requestChallenge = $.ajax({
-			url: "authentication.php",
-			type: "POST",
-			data: { voter_id: voterId },
-			dataType: "html"
-		});
-
-		requestChallenge.done(function (msg) {
-			$('#status').html('Request as been sent.');
-
-			var challenge = JSON.parse(msg);
-
-			if (!challenge.error) {
-				var decrypt = new JSEncrypt();
-				decrypt.setPrivateKey(privateKey);
-
-				token = decrypt.decrypt(challenge.secret);
-
-				sendVotes();
-
-				console.log('INFO: token = ' + token);
-			} else {
-				console.log('ERROR: ' + challenge.error);
-			}
-		});
-
-		requestChallenge.fail(function (jqXHR, textStatus) {
-			$('#status').html('An error occurred: ' + textStatus);
-		});
-	} else {
-		alert("É necessário preencher todos os campos!");
-	}
 }
 
 /* Loads parties information from server */
@@ -129,10 +89,84 @@ function generateSets(n) {
 	votesPasswords = setsPass;
 }
 
+/* Hash a vote */
+function hashVotes(vote) {
+	var passcode = guid();
+	var hashed = CryptoJS.HmacMD5(JSON.stringify(vote), passcode);
+
+	var obj = new Object();
+	obj.encrypted = hashed + "";
+	obj.passcode = passcode;
+
+	return obj;
+}
+
+/* Cipher a message with a public key */
+function encryptRSA(key, message) {
+	var encrypt = new JSEncrypt();
+	encrypt.setPublicKey(key);
+	return encrypt.encrypt(message);
+}
+
+/* Decipher a message with a private key */
+function decryptRSA(key, encrypted) {
+	var decrypt = new JSEncrypt();
+	decrypt.setPrivateKey(key);
+	return decrypt.decrypt(encrypted);
+}
+
+/* Generates a unique id for each vote */
+function guid() {
+	function s4() {
+		return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+	}
+
+	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
+
+/* Authenticate voter with the electoral committee */
+function authenticateVoter() {
+	var voterId = $('#voterNumber').val();
+	publicKeyField = $('#filesPubKey').val();
+	privateKeyField = $('#filesPrivKey').val();
+
+	if (voterId != "" && publicKeyField != "" && privateKeyField != "") {
+		var requestChallenge = $.ajax({
+			url: "authentication.php",
+			type: "POST",
+			data: { voter_id: voterId },
+			dataType: "html"
+		});
+
+		requestChallenge.done(function (msg) {
+			$('#status').html('Request as been sent.');
+
+			var challenge = JSON.parse(msg);
+
+			if (!challenge.error) {
+				var decrypt = new JSEncrypt();
+				decrypt.setPrivateKey(privateKey);
+
+				token = decrypt.decrypt(challenge.secret);
+
+				sendVotes();
+
+				console.log('INFO: token = ' + token);
+			} else {
+				console.log('ERROR: ' + challenge.error);
+			}
+		});
+
+		requestChallenge.fail(function (jqXHR, textStatus) {
+			$('#status').html('An error occurred: ' + textStatus);
+		});
+	} else {
+		alert("É necessário preencher todos os campos!");
+	}
+}
+
 /* Send sets of generated votes to server */
 function sendVotes() {
-	console.log(votesHashed);
-
 	var request = $.ajax({
 		url: "votes.php",
 		type: "POST",
@@ -149,7 +183,8 @@ function sendVotes() {
 		if (!res.error) {
 			console.log ("INFO: Chosen set = " + res.set);
 
-			sendVerificationVotes(res.set);
+			chosenSet = res.set;
+			sendVerificationVotes(chosenSet);
 		} else {
 			console.log(res.error);
 		}
@@ -192,6 +227,14 @@ function sendVerificationVotes(excludedVote) {
 	});
 
 	request.done(function (msg) {
+		/*var res = JSON.parse(msg);
+
+		if (res.ok) {
+			console.log(res.ok);
+		} else {
+			console.log(res.error);
+		}*/
+
 		console.log(msg);
 
 		// TODO : Process return
@@ -200,39 +243,4 @@ function sendVerificationVotes(excludedVote) {
 	request.fail(function (jqXHR, textStatus) {
 		console.log('An error occurred: ' + textStatus);
 	});
-}
-
-/* Hash a vote */
-function hashVotes(vote) {
-	var passcode = guid();
-	var hashed = CryptoJS.HmacMD5(JSON.stringify(vote), passcode);
-
-	var obj = new Object();
-	obj.encrypted = hashed + "";
-	obj.passcode = passcode;
-
-	return obj;
-}
-
-/* Cipher a message with a public key */
-function encryptRSA(key, message) {
-	var encrypt = new JSEncrypt();
-	encrypt.setPublicKey(key);
-	return encrypt.encrypt(message);
-}
-
-/* Decipher a message with a private key */
-function decryptRSA(key, encrypted) {
-	var decrypt = new JSEncrypt();
-	decrypt.setPrivateKey(key);
-	return decrypt.decrypt(encrypted);
-}
-
-/* Generates a unique id for each vote */
-function guid() {
-	function s4() {
-		return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-	}
-
-	return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
