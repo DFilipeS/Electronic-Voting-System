@@ -1,0 +1,13 @@
+Votação Electrónica - Trabalho laboratorial
+Segurança de Redes e Dados 14/15
+
+Daniel Filipe       up201106486@alunos.dcc.fc.up.pt
+Fernando Ferreira   up200900483@alunos.dcc.fc.up.pt
+Paulo Ribeiro       up201103884@alunos.dcc.fc.up.pt
+
+Requisitos:
+    - Apache com PHP 5.x.x e MySQL instalados.
+
+Notas:
+    - Antes de executar, importar a base de dados do ficheiro "database.sql".
+    - A pasta "keys" contém as chaves pública e privadas da comissão eleitoral (ce.xxx) e de cinco utilizadores de teste (userN.xxx).
