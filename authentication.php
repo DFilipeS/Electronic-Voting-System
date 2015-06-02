@@ -4,7 +4,6 @@
 
 set_include_path(get_include_path() . PATH_SEPARATOR . 'phpseclib');
 include('Crypt/RSA.php');
-
 header('Content-Type: application/json');
 
 $id = $_POST['voter_id'];
@@ -19,13 +18,14 @@ if (!is_null($publickey)) {
 /************************* Functions *************************/
 
 function getPublicKeyFromDB($voterid) {
-    $db = new mysqli('localhost', 'root', 'root', 'evs');
+    include('db-config.php');
+    $db = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
 
     if ($db->connect_errno > 0){
         die('Unable to connect to database [' . $db->connect_error . ']');
     }
 
-    $statement = $db->prepare("SELECT `public_key` FROM `authentication` WHERE `id` = ?");
+    $statement = $db->prepare("SELECT `public_key` FROM `authentication` WHERE `id` = ? AND `token` = 0");
 
     $statement->bind_param('i', $voterid);
     $statement->execute();
@@ -69,12 +69,13 @@ function getError() {
 }
 
 function setToken($voterId, $token) {
-    $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+    include('db-config.php');
+    $dsn = "mysql:host=" . $dbhost . ";dbname=" . $dbname . ";charset=utf8";
     $opt = array(
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     );
-    $pdo = new PDO($dsn, 'root', 'root', $opt);
+    $pdo = new PDO($dsn, $dbuser, $dbpass, $opt);
 
     $query = $pdo->prepare("UPDATE authentication SET token = 1 WHERE id = ?");
     $query->execute(array($voterId));

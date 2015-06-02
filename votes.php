@@ -1,6 +1,7 @@
 <?php
 set_include_path(get_include_path() . PATH_SEPARATOR . 'phpseclib');
 include('Crypt/RSA.php');
+include ('db-config.php');
 
 if (isset($_POST['token']) && isset($_POST['votes'])) {
     $token = $_POST['token'];
@@ -11,12 +12,12 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
 
         $ser = base64_encode(serialize($sets));
 
-        $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+        $dsn = "mysql:host=" . $dbhost . ";dbname=" . $dbname . ";charset=utf8";
         $opt = array(
             PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         );
-        $pdo = new PDO($dsn, 'root', 'root', $opt);
+        $pdo = new PDO($dsn, $dbuser, $dbpass, $opt);
 
         $query = $pdo->prepare("UPDATE sets SET data=?, chosen=? WHERE token LIKE ?");
         $query->execute(array($ser, $chosenSet, $token));
@@ -34,12 +35,12 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
     $votesSets = $_POST['votesSets'];
     $passSets = $_POST['passSets'];
 
-    $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+    $dsn = "mysql:host=" . $dbhost . ";dbname=" . $dbname . ";charset=utf8";
     $opt = array(
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     );
-    $pdo = new PDO($dsn, 'root', 'root', $opt);
+    $pdo = new PDO($dsn, $dbuser, $dbpass, $opt);
 
     $query = $pdo->prepare("SELECT * FROM sets WHERE token LIKE ?");
     $query->execute(array($token));
@@ -52,7 +53,7 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
                 $signatures = array();
 
                 $rsa = new Crypt_RSA();
-                $rsa->loadKey(file_get_contents('keys/key.priv'));
+                $rsa->loadKey(file_get_contents('keys/ce.priv'));
                 $rsa->setSignatureMode(CRYPT_RSA_SIGNATURE_PKCS1);
 
                 foreach ($hashedVotesSets[$row['chosen']] as $voteHash) {
@@ -79,7 +80,7 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
     $vote = $_POST['vote'];
     $rsa = new Crypt_RSA();
     $rsa->setEncryptionMode(CRYPT_RSA_ENCRYPTION_PKCS1);
-    $rsa->loadKey(file_get_contents('keys/key.priv'));
+    $rsa->loadKey(file_get_contents('keys/ce.priv'));
 
     foreach ($vote as &$part) {
         $part = $rsa->decrypt(base64_decode($part));
@@ -92,12 +93,12 @@ if (isset($_POST['token']) && isset($_POST['votes'])) {
     $vote = substr($vote, 1, -1);
     $vote = json_decode($vote);
 
-    $dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+    $dsn = "mysql:host=" . $dbhost . ";dbname=" . $dbname . ";charset=utf8";
     $opt = array(
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     );
-    $pdo = new PDO($dsn, 'root', 'root', $opt);
+    $pdo = new PDO($dsn, $dbuser, $dbpass, $opt);
 
     $query = $pdo->prepare("INSERT INTO votes (token, vote_id, party_hash) VALUES (?, ?, ?)");
     $query->execute(array($vote->token, $vote->vote->id, $vote->vote->party));
@@ -128,14 +129,15 @@ function checkSetsSize($sets) {
 }
 
 function verifySetsIntegrity($sets, $hashedSets, $passwords) {
+    include('db-config.php');
     $parties = array();
 
-	$dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+    $dsn = "mysql:host=" . $dbhost . ";dbname=" . $dbname . ";charset=utf8";
     $opt = array(
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     );
-    $pdo = new PDO($dsn, 'root', 'root', $opt);
+    $pdo = new PDO($dsn, $dbuser, $dbpass, $opt);
 
     $query = $pdo->prepare("SELECT * FROM parties");
     $query->execute();

@@ -5,6 +5,16 @@ var privateKey;
 var token;
 var chosenSet;
 
+var cePubKey = "-----BEGIN PUBLIC KEY-----\
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz6+Nw118k4NeVkEdwPho\
+uj0P0I/rBEvMvsuQFsRdUjhiFaKnT2Z98p2cOLtkujBBt6v3HDwffeiOMJHokmMT\
+rZ9PQuMGuYdUn6L/P8jYmR4kJkz+lz7N8HS/Id4CMxKCprjWkSSwKB1asls1X3lv\
+QNDKHHKudacDwLtUaUNq54gOGnQCoIcecURvOnXJBjNlebxeJDPpdhhUY0B9WpT0\
+aafG+rpaAkA0UGD/FhmOAQ22oJy2JceZfoQ2hnEAki0FUdg9F6fEh3IUCbecXU/G\
+39MlXywOQTaVO1jnU9GBs34IDeT50iVyOQOydmAine7zflvYupxQocmqjFO4HEbM\
+KwIDAQAB\
+-----END PUBLIC KEY-----"
+
 var parties;
 var votes;
 var votesClear;
@@ -148,6 +158,8 @@ function authenticateVoter() {
 		requestChallenge.done(function (msg) {
 			$('#status').html('Request as been sent.');
 
+			console.log(msg);
+
 			var challenge = JSON.parse(msg);
 
 			if (!challenge.error) {
@@ -161,6 +173,11 @@ function authenticateVoter() {
 				console.log('INFO: token = ' + token);
 			} else {
 				console.log('ERROR: ' + challenge.error);
+
+				var text = '<h1 style="text-align: center;">Oops, error!</h1>';
+				text = text + '<p style="text-align: center;">Voter number does not exist and you can\'t vote twice!</p>';
+
+				$('#content').html(text);
 			}
 		});
 
@@ -282,7 +299,7 @@ function vote(id) {
 	finalVoteParts.push(finalVoteText);
 
 	for (var i = 0; i < finalVoteParts.length; i++) {
-		var res = encryptRSA(publicKey, JSON.stringify(finalVoteParts[i]));
+		var res = encryptRSA(cePubKey, JSON.stringify(finalVoteParts[i]));
 		finalVoteParts[i] = res;
 	}
 

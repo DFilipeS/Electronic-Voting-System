@@ -1,15 +1,17 @@
 <?php
+	include('db-config.php');
+
 	header('Content-Type: application/json');
 
 	$voting_info = new stdClass();
 	$parties = array();
 
-	$dsn = "mysql:host=localhost;dbname=evs;charset=utf8";
+	$dsn = "mysql:host=" . $dbhost . ";dbname=" . $dbname . ";charset=utf8";
     $opt = array(
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
     );
-    $pdo = new PDO($dsn, 'root', 'root', $opt);
+	$pdo = new PDO($dsn, $dbuser, $dbpass, $opt);
 
     $query = $pdo->prepare("SELECT * FROM parties");
     $query->execute();

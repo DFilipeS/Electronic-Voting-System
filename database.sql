@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.4.2
+-- version 4.4.1.1
 -- http://www.phpmyadmin.net
 --
--- Host: 127.0.0.1:3306
--- Generation Time: May 29, 2015 at 09:35 PM
--- Server version: 5.5.43
--- PHP Version: 5.4.40
+-- Host: localhost:8889
+-- Generation Time: Jun 02, 2015 at 01:32 PM
+-- Server version: 5.5.42
+-- PHP Version: 5.6.7
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -24,14 +24,18 @@ CREATE TABLE `authentication` (
   `id` int(11) NOT NULL,
   `public_key` text NOT NULL,
   `token` tinyint(1) DEFAULT '0'
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `authentication`
 --
 
 INSERT INTO `authentication` (`id`, `public_key`, `token`) VALUES
-(1, '-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz6+Nw118k4NeVkEdwPho\nuj0P0I/rBEvMvsuQFsRdUjhiFaKnT2Z98p2cOLtkujBBt6v3HDwffeiOMJHokmMT\nrZ9PQuMGuYdUn6L/P8jYmR4kJkz+lz7N8HS/Id4CMxKCprjWkSSwKB1asls1X3lv\nQNDKHHKudacDwLtUaUNq54gOGnQCoIcecURvOnXJBjNlebxeJDPpdhhUY0B9WpT0\naafG+rpaAkA0UGD/FhmOAQ22oJy2JceZfoQ2hnEAki0FUdg9F6fEh3IUCbecXU/G\n39MlXywOQTaVO1jnU9GBs34IDeT50iVyOQOydmAine7zflvYupxQocmqjFO4HEbM\nKwIDAQAB\n-----END PUBLIC KEY-----', 0);
+(1, '-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDOlNuxJnupgAS6SACWz//pHQdM\nzb9DaNX04++Xpw9dMXchuH2QH2F6xrH/HcAFbawNxYTsfxx9Vn6pllPlh1weKnF9\nACLCYajP3vry/Ek6YPRiyDkfUZ3a4d5ERPVGqKXG6yok14ZcdjrKxFyV2jTGhuY5\n/OiYfj3AwL3v0K8kwwIDAQAB\n-----END PUBLIC KEY-----', 0),
+(2, '-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDKsnVD+qQxsJYWUv3GINuKOchV\nFGEIihfwO8LS+NtAvt8XIwGIAtoFWijy0bV08ePYltDz4H14os2yWOkeNv3rxdvM\nStzaIlO3oBJctvJO3ozFU3PGjGmTRUqDvZp7mTWQe3M7f3aKVLLb9ZKfbqeq4TpR\nsTX8ZfkVoSPzIMjnCQIDAQAB\n-----END PUBLIC KEY-----', 0),
+(3, '-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDU1bo7m76imNo4UBaED6LLmXWz\nagP4TbaQYDnb5wwsveROYvUKvGuqvMf5aZafsDm7avC+W+9wN5xnEw7ioLxT75Jd\n+WbtVJqXDvFGRRdNAs17yzZ0lW917JMUu1GUYZQ1o8CHl4cuhbLmNIPL6otZi4SS\nceQVsz5FivEsN4J32wIDAQAB\n-----END PUBLIC KEY-----', 0),
+(4, '-----BEGIN PUBLIC KEY-----\r\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJT6ijvqD++qsqxBeRiF8hEJhj\r\njde485AOllPMzj72zT6yKCxXoiU0Go2Y8wiHfHJ0hy1QOXKyRQSbJdG/EBR+VsUN\r\nXJwONpx1T5HN0L/gk4Ru5cXo+LAM41ZsBzcf5tHvm1QVjuFTZKZrLFk9l0oeoCbb\r\nPbFHL7way7oOo4dNhwIDAQAB\r\n-----END PUBLIC KEY-----', 0),
+(5, '-----BEGIN PUBLIC KEY-----\r\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCq2J/7a8uCPP+WCLN/3cyHMC0x\r\no63xL3C65bduDmvwg2mnrBgv0wnntDEIC+8zIBuXoDyHJeM9RmeCQbb3qo7eg7jD\r\n0O+94KFYTDyzjVCtoKKH/CXF3OEC7q4eWbcLNu4/o/bVI/dl/5yx/8xTNUMyjXUh\r\nqsOKd9CaqMLAxVJIzQIDAQAB\r\n-----END PUBLIC KEY-----', 0);
 
 -- --------------------------------------------------------
 
@@ -67,7 +71,7 @@ CREATE TABLE `sets` (
   `token` text NOT NULL,
   `data` text,
   `chosen` int(11) DEFAULT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=132 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=136 DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -80,7 +84,7 @@ CREATE TABLE `votes` (
   `token` text NOT NULL,
   `vote_id` text NOT NULL,
   `party_hash` text NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
 --
 -- Indexes for dumped tables
@@ -119,19 +123,19 @@ ALTER TABLE `votes`
 -- AUTO_INCREMENT for table `authentication`
 --
 ALTER TABLE `authentication`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
 --
 -- AUTO_INCREMENT for table `parties`
 --
 ALTER TABLE `parties`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
 --
 -- AUTO_INCREMENT for table `sets`
 --
 ALTER TABLE `sets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=132;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
 --
 -- AUTO_INCREMENT for table `votes`
 --
 ALTER TABLE `votes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1;
